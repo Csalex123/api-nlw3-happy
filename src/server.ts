@@ -1,13 +1,13 @@
 import express from 'express';
+
 import './database/connection';
 
-const app = express();
-app.use(express.json());
+import routes from './routes';
 
-app.get('/users', (req, res) => {
- 
-    
-});
+const app = express();
+
+app.use(express.json());
+app.use(routes);
 
 
 app.listen(3333);
