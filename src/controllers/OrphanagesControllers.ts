@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import Orphanage from '../models/Orphanage';
 import orphanageView from '../views/orphanages_view';
+import schema from '../validations/Orphanages';
 
 export default {
     async index(req: Request, res: Response) {
@@ -31,7 +32,6 @@ export default {
 
     async create(req: Request, res: Response) {
 
-
         const {
             name,
             latitude,
@@ -50,7 +50,7 @@ export default {
             return { path: image.filename }
         })
 
-        const orphanage = orphanagesRepository.create({
+        const data = {
             name,
             latitude,
             longitude,
@@ -59,8 +59,13 @@ export default {
             opening_hours,
             open_on_weekends,
             images
-        });
+        }
 
+        await schema.validate(data, {
+            abortEarly: false
+        })
+
+        const orphanage = orphanagesRepository.create(data);
 
         try {
             await orphanagesRepository.save(orphanage);
