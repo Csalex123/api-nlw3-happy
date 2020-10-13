@@ -1,14 +1,17 @@
 import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import Orphanage from '../models/Orphanage';
+import orphanageView from '../views/orphanages_view';
 
 export default {
     async index(req: Request, res: Response) {
         const orphanagesRepository = getRepository(Orphanage);
 
         try {
-            const orphanages = await orphanagesRepository.find();
-            res.status(201).json(orphanages)
+            const orphanages = await orphanagesRepository.find({
+                relations: ['images']
+            });
+            res.status(201).json(orphanageView.renderMany(orphanages));
         } catch (error) {
             res.status(401).send({ error });
         }
@@ -19,8 +22,8 @@ export default {
         const { id } = req.params;
 
         try {
-            const orphanage = await orphanagesRepository.findOneOrFail(id);
-            res.status(201).json(orphanage)
+            const orphanage = await orphanagesRepository.findOneOrFail(id, { relations: ['images'] });
+            res.status(201).json(orphanageView.render(orphanage))
         } catch (error) {
             res.status(401).send({ error });
         }
@@ -42,7 +45,7 @@ export default {
         const orphanagesRepository = getRepository(Orphanage);
 
         const requestImages = req.files as Express.Multer.File[];
-        
+
         const images = requestImages.map(image => {
             return { path: image.filename }
         })
